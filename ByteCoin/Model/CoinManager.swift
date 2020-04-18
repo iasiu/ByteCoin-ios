@@ -10,13 +10,15 @@ import Foundation
 
 protocol CoinManagerDelegate {
     func didFailWithError(error: Error)
+    func didUpdateValue(text: String)
 }
 
 struct CoinManager {
     
+    var delegate: CoinManagerDelegate?
+    
     let baseURL = "https://rest.coinapi.io/v1/exchangerate/BTC"
     let apiKey = "73F3A80A-43A0-4705-9B51-C1D28268F071"
-    let delegate: CoinManagerDelegate?
     
     let currencyArray = ["AUD", "BRL","CAD","CNY","EUR","GBP","HKD","IDR","ILS","INR","JPY","MXN","NOK","NZD","PLN","RON","RUB","SEK","SGD","USD","ZAR"]
     
@@ -24,10 +26,9 @@ struct CoinManager {
         return baseURL + "/" + currency + "?apikey=" + apiKey
     }
     
-    func getValue(for currency: String) -> Double {
+    func getValue(for currency: String) {
         let url = getURL(for: currency)
         performRequest(with: url)
-        return 0.0
     }
     
     func performRequest(with urlString: String) {
@@ -39,7 +40,9 @@ struct CoinManager {
                     return
                 }
                 if let safeData = data {
-                    print(self.parseJSON(safeData))
+                    let value = self.parseJSON(safeData) ?? 0.0
+                    let strValue = String(format: "%.2f", value)
+                    self.delegate?.didUpdateValue(text: strValue)
                 }
             }
             task.resume()

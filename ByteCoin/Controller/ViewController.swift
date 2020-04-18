@@ -14,11 +14,12 @@ class ViewController: UIViewController {
     @IBOutlet weak var currencyLabel: UILabel!
     @IBOutlet weak var currencyPicker: UIPickerView!
     
-    let coinManager = CoinManager(delegate: self as? CoinManagerDelegate)
+    var coinManager = CoinManager()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        coinManager.delegate = self
         currencyPicker.dataSource = self
         currencyPicker.delegate = self
     }
@@ -44,7 +45,7 @@ extension ViewController: UIPickerViewDelegate {
     func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
         let currency: String = self.coinManager.currencyArray[row]
         self.currencyLabel.text = currency
-        self.valueLabel.text = String(format: "%.4f", coinManager.getValue(for: currency))
+        self.coinManager.getValue(for: currency)
     }
 }
 
@@ -54,8 +55,10 @@ extension ViewController: CoinManagerDelegate {
         print(error)
     }
     
-    func didUpdateValue(value: String) {
-        print(value)
+    func didUpdateValue(text: String) {
+        DispatchQueue.main.async {
+            self.valueLabel.text = text
+        }
     }
 }
 
